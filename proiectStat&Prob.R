@@ -160,3 +160,73 @@ print("Tabel contingenta:")
 print(tabelContingenta)
 test_chi <-chisq.test(tabelContingenta)
 print(test_chi)
+
+# cerinta 3
+#suma cererilor pentru prod 1
+cerereTotalaP1 <- dateStoc %>% 
+  filter(Produs=="prod1") %>% 
+  group_by(zi) %>% 
+  summarise(CerereTotala=sum(Cerere))
+
+ggplot(cerereTotalaP1, aes(x = CerereTotala)) +
+  geom_histogram(aes(y=..density..), binwidth=1, fill="coral", color="black", alpha=0.8) +
+  stat_function(
+    fun=function(x) dpois(x, lambda=35),
+    geom="point",
+    color="red",
+    size=2
+  ) + 
+  labs(
+    title="Suma cererilor pentru prod 1",
+    subtitle="Histograma vs distribvutie poisson 35",
+    x= "Cerere totala zilnica", 
+    y= "desitate"
+  ) + 
+  theme_minimal()
+
+#suma produselor defecte intr-o zi
+defecteTotaleZi <- dateStoc %>%
+  group_by(zi) %>%
+  summarise(DefecteTotale=sum(Produse_defecte))
+ggplot(defecteTotaleZi, aes(x=DefecteTotale))+
+  geom_histogram(aes(y=..density..), binwidth = 1, fill="coral", color="black", alpha=0.8) + 
+  stat_function(
+    fun = function(x) dbinom(x, size = 600, prob = 0.03),
+    geom = "point",
+    color = "red",
+    size = 1.2
+  ) +
+  labs(
+    title = "Suma produselor defecte intr-o zi",
+    subtitle = "Histograma simulata vs distributie teoretica Binomial(n=600, p=0.03)",
+    x = "Numar Total Produse Defecte",
+    y = "Densitate"
+  ) +
+  theme_minimal()
+
+# suma timpilor de livrare pentru 2 produse
+timpLivrarePivot <- dateStoc %>% 
+  filter(Produs %in% c("prod1", "prod2")) %>%
+  select(zi, Magazin, Produs, Timp_Livrare) %>%
+  pivot_wider(names_from = Produs, values_from = Timp_Livrare, names_prefix = "Timp_Livrare_")
+timpLivrareTotal <- timpLivrarePivot %>% mutate(TimpTotal=Timp_Livrare_prod1 + Timp_Livrare_prod2)
+
+ggplot(timpLivrareTotal, aes(x=TimpTotal)) + 
+  geom_histogram(aes(y=..density..), bins=30, fill="coral", color="black", alpha=0.8) +
+  stat_function(
+    fun = function(x) dgamma(x, shape = 5, rate = 0.5),
+    color = "red",
+    size = 1.2
+  ) +
+  labs(
+    title="suma timpilor de livrare pentru 2 produse",
+    subtitle="Histograma simulata vs distributia teoretica Gamma(α=5, β=0.5)",
+    x="Timp total livrare",
+    y="Densitate"
+  )
+
+
+
+
+
+
