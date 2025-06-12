@@ -1,0 +1,13 @@
+Toate bibliotecile le-am instalat din consola R.
+install.packages("tidyverse")
+install.packages("truncnorm")
+install.packages("shiny")
+
+1. library(tidyverse)
+Pentru manipularea si modificarea datelor in R. Folosim pachetul " dplyr " in general.
+
+2. library(truncnorm)
+Pentru a putea lucra cu o repartitie "normala trunchiata".
+
+3. library(shiny)
+Putem crea aplicatii web direct din R.
