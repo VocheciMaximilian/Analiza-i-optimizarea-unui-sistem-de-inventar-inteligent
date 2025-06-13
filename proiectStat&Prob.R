@@ -225,8 +225,59 @@ ggplot(timpLivrareTotal, aes(x=TimpTotal)) +
     y="Densitate"
   )
 
+#cerinta 4
+#subprob 1 - definirea pragului sub care dorim să estimam probabilitatea
+prag <- 10 
 
+#calcularea mediei și a variantei cererii
+media_cererii <- mean(dateStoc$Cerere)
+varianța_cererii <- var(dateStoc$Cerere)
 
+#aplicarea inegalității lui Cebisev
+#P(X < prag) <= Var(X) / (Var(X) + (media - prag)^2)
 
+#probabilitatea estimata
+probabilitate_estimata <- varianța_cererii / (varianța_cererii + (media_cererii - prag)^2)
+cat("Probabilitatea ca stocul sa scadă sub pragul de", prag, "este estimata la:", probabilitate_estimata, "\n")
 
+#subprob 2
+#definirea coeficientilor pentru costul de depozitare
+c1 <- 5  # cost fix
+c2 <- 0.2 # cost variabil (pe unitate)
 
+#definirea unei funcții pentru costul de depozitare ca functie de stoc
+cost_depozitare <- function(Q) {
+  return(c1 * Q + c2 * Q^2)
+}
+
+#calcularea mediei stocului
+media_stoc <- mean(dateStoc$Cerere)
+
+#calcularea costului de depozitare la nivelul mediu al stocului
+cost_mediu <- cost_depozitare(media_stoc)
+
+#calcularea mediei costului de depozitare pe baza stocului fluctuant
+costuri_stoc_fluctuant <- cost_depozitare(dateStoc$Cerere)
+media_costurilor <- mean(costuri_stoc_fluctuant)
+
+#aplicarea inegalitatii lui Jensen
+cat("Inegalitatea lui Jensen ne arata ca:", cost_mediu, "<=", media_costurilor, "\n")
+
+#subproblema 3, inegalitate Chernoff-Poisson pentru comanda minima necesara cu risc mai mic de 1% de a ramane fara stoc
+# Calcularea mediei cererii (lambda) pe baza datelor existente
+lambda <- mean(dateStoc$Cerere) # media cererii zilnice
+
+# Definirea timpului de livrare in zile
+L <- 5 
+
+# Funcția inegalitatii Chernoff-Poisson
+chernoff_poisson <- function(lambda, L, alpha = 0.01) {
+  Lambda <- lambda * L
+  f <- function(delta) Lambda * delta^2 / (2 + delta) - log(1/alpha)
+  delta_star <- uniroot(f, c(0, 10))$root
+  ceiling((1 + delta_star) * Lambda)
+}
+
+# Calcularea punctului de comanda minim pentru riscul de 1%
+S <- chernoff_poisson(lambda = lambda, L = L, alpha = 0.01)
+cat("Punct de comanda minim pentru α=1%:", S, "buc\n")
