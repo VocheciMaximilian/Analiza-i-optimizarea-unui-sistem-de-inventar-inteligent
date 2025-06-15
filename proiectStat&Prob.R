@@ -2,6 +2,7 @@
 library(tidyverse)
 library(truncnorm)
 library(shiny)
+library(corrplot)
 
 nr_zile <- 90 
 magazine <- c("magA", "magB")
@@ -281,3 +282,44 @@ chernoff_poisson <- function(lambda, L, alpha = 0.01) {
 # Calcularea punctului de comanda minim pentru riscul de 1%
 S <- chernoff_poisson(lambda = lambda, L = L, alpha = 0.01)
 cat("Punct de comanda minim pentru α=1%:", S, "buc\n")
+
+#heatmap
+matrice_core <- cor(pivotA[, c("Cerere_prod1", "Cerere_prod2", "Cerere_prod3")])
+
+corrplot(matrice_core, method = "color",
+         type = "upper",
+         order = "hclust",
+         addCoef.col = "black",
+         tl.col = "black",
+         tl.srt = 45,
+         diag = FALSE,
+         title = "Heatmap Corelații Cerere - Magazin A",
+         mar = c(0,0,1,0))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
