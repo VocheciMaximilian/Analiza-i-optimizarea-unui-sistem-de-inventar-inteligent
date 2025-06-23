@@ -2,19 +2,19 @@ library(shiny)
 library(ggplot2)
 library(truncnorm)
 
-# --- Interfața Utilizator (UI) ---
+# --- Interfata Utilizator (UI) ---
 ui <- fluidPage(
-  titlePanel("Simulator Interactiv de Stocuri și Riscuri"),
+  titlePanel("Simulator Interactiv de Stocuri si Riscuri"),
   
   sidebarLayout(
     sidebarPanel(
       h4("Parametri Simulare"),
       
       selectInput("produs_selectat", "Alege Produsul de Simulat:",
-                  choices = c("Produs cu vânzare rapidă (Poisson)" = "poisson",
-                              "Produs cu cerere variabilă (Normal Trunchiat)" = "truncnorm")),
+                  choices = c("Produs cu vanzare rapida (Poisson)" = "poisson",
+                              "Produs cu cerere variabila (Normal Trunchiat)" = "truncnorm")),
       
-      # Slidere care apar condiționat
+      # Slidere care apar conditionat
       conditionalPanel(
         condition = "input.produs_selectat == 'poisson'",
         sliderInput("lambda", "Cererea Medie (λ):", min = 5, max = 50, value = 20, step = 1)
@@ -30,7 +30,7 @@ ui <- fluidPage(
       
       sliderInput("prag_risc", "Prag de Risc (Nivel Stoc):", min = 0, max = 100, value = 25),
       
-      numericInput("num_sim", "Număr de Zile Simulate:", value = 1000, min = 100, max = 10000)
+      numericInput("num_sim", "Numar de Zile Simulate:", value = 1000, min = 100, max = 10000)
     ),
     
     mainPanel(
@@ -45,7 +45,7 @@ ui <- fluidPage(
 # --- Logica Server ---
 server <- function(input, output) {
   
-  # Funcție reactivă pentru a genera datele pe baza input-urilor
+  # Functie reactiva pentru a genera datele pe baza input-urilor
   simulated_data <- reactive({
     if (input$produs_selectat == "poisson") {
       rpois(input$num_sim, lambda = input$lambda)
@@ -54,7 +54,7 @@ server <- function(input, output) {
     }
   })
   
-  # Generează graficul
+  # Genereaza graficul
   output$distPlot <- renderPlot({
     data <- simulated_data()
     
@@ -63,30 +63,30 @@ server <- function(input, output) {
       geom_density(color = "red", size = 1) +
       geom_vline(xintercept = input$prag_risc, color = "orange", linetype = "dashed", size = 1.5) +
       annotate("text", x = input$prag_risc, y = 0, label = " Prag Risc", hjust = -0.1, color = "orange", size = 5) +
-      labs(title = "Distribuția Simulată a Cererii Zilnice",
-           x = "Cerere Zilnică",
+      labs(title = "Distributia Simulata a Cererii Zilnice",
+           x = "Cerere Zilnica",
            y = "Densitate") +
       theme_minimal(base_size = 15)
   })
   
-  # Generează textul de analiză a riscului
+  # Genereaza textul de analiza a riscului
   output$riskAnalysis <- renderText({
     data <- simulated_data()
     prob_depasire <- mean(data > input$prag_risc)
     
     paste(
-      "Sumar pentru parametrii selectați:\n",
+      "Sumar pentru parametrii selectati:\n",
       "-------------------------------------\n",
-      "Cerere medie simulată:", round(mean(data), 2), "\n",
-      "Deviație standard simulată:", round(sd(data), 2), "\n",
-      "Cerere maximă simulată:", max(data), "\n\n",
+      "Cerere medie simulata:", round(mean(data), 2), "\n",
+      "Deviatie standard simulata:", round(sd(data), 2), "\n",
+      "Cerere maxima simulata:", max(data), "\n\n",
       "Analiza Pragului de Risc (Stoc =", input$prag_risc, "):\n",
       "-------------------------------------\n",
-      "Probabilitatea ca cererea să depășească stocul este:", scales::percent(prob_depasire, accuracy = 0.1), "\n",
-      "(Acesta este riscul de a epuiza stocul într-o zi oarecare)"
+      "Probabilitatea ca cererea sa depaseasca stocul este:", scales::percent(prob_depasire, accuracy = 0.1), "\n",
+      "(Acesta este riscul de a epuiza stocul intr-o zi oarecare)"
     )
   })
 }
 
-# Rulează aplicația
-shinyApp(ui = ui, server = server) # Comentează această linie când nu rulezi direct fișierul
+# Ruleaza aplicatia
+shinyApp(ui = ui, server = server) # Comenteaza aceasta linie cand nu rulezi direct fisierul
