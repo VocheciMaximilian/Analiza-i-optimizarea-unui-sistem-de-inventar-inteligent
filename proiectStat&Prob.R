@@ -326,7 +326,7 @@ prob_stoc_insuf <- replicate(n_sim, {
   zile_fara_stoc >= 2
 })
 probabilitate_simulata <- mean(prob_stoc_insuf)
-cat("Probabilitatea simulată ca stocul să fie insuficient cel puțin 2 zile într-o săptămână este:", round(probabilitate_simulata, 3), "\n")
+cat("Probabilitatea simulata ca stocul să fie insuficient cel puțin 2 zile într-o saptamana este:", round(probabilitate_simulata, 3), "\n")
 
 #cerinta test 2, estimam porbabilitatea ca numarul total de produse defecte livrate intr-o saptamana sa depaseasca 25. Comparam cu estimarea teoretica.
 set.seed(123)
@@ -339,7 +339,7 @@ prag_defecte <- 25
 defecte_sapt <- replicate(n_sim, sum(rbinom(zile_sapt, size = produse_pe_zi, prob = prob_defect)))
 prob_simulata <- mean(defecte_sapt > prag_defecte)
 
-cat("Probabilitatea simulată ca într-o săptămână să fie peste", prag_defecte, "produse defecte:", prob_simulata,"\n")
+cat("Probabilitatea simulata ca intr-o saptamana să fie peste", prag_defecte, "produse defecte:", prob_simulata,"\n")
 
 
 prob_teoretica <- 1 - pbinom(prag_defecte, size = 700, prob = prob_defect)
@@ -359,9 +359,38 @@ ggplot(df, aes(x = defecte_sapt)) +
   )
 
   
+#cerinta test 3, estimam probabilitatea ca intr-o zi aleatoare magazinul B sa aiba cerere de cel putin 50. Comparam cu valoarea teoretica
 
+#select mag B
+magazinB <- dateStoc %>% filter(Magazin == "magB")
 
+cerere_totala_B <- magazinB %>%
+  group_by(zi) %>%
+  summarise(CerereTotala = sum(Cerere))
 
+prob_simulata <- mean(cerere_totala_B$CerereTotala >= 50)
+cat("Probabilitatea simulată ca cererea totala zilnica să fie >= 50 în magazinul B:", round(prob_simulata, 3), "\n")
+
+#Estimare teoretica: suma a trei variabile Poisson independente
+lambda_prod1 <- 15
+lambda_prod2 <- mean(dateStoc$Cerere[dateStoc$Produs == "prod2" & dateStoc$Magazin == "magB"])
+lambda_prod3 <- mean(dateStoc$Cerere[dateStoc$Produs == "prod3" & dateStoc$Magazin == "magB"])
+lambda_total <- lambda_prod1 + lambda_prod2 + lambda_prod3
+prob_teoretica <- 1 - ppois(49, lambda = lambda_total)
+cat("Probabilitatea teoretica(Poisson) ca cererea totala zilnica să fie >= 50:", round(prob_teoretica, 3), "\n")
+
+# Vizualizare
+library(ggplot2)
+ggplot(cerere_totala_B, aes(x = CerereTotala)) +
+  geom_histogram(binwidth = 1, fill = "coral", color = "black", alpha = 0.8) +
+  geom_vline(xintercept = 50, color = "red", linetype = "dashed", size = 1) +
+  labs(
+    title = "Distributia cererii totale zilnice in magazinul B",
+    subtitle = paste("Linie rosie: prag = 50|prob simulata:", round(prob_simulata, 3)),
+    x = "Cerere totala zilnica",
+    y = "Frecventa"
+  ) +
+  theme_minimal()
 
 
 
