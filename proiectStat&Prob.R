@@ -297,7 +297,68 @@ corrplot(matrice_core, method = "color",
          mar = c(0,0,1,0))
 
 
+#cerinta test 1
+set.seed(123)
+n_sim <- 100 #simulam 1000 de saptamani
+zile_sapt <- 7
+lambda <- 8
+alpha <- 2
+beta <- 3
+nivel_stoc_initial <- 0 
+cant_comandata <- 50
 
+prob_stoc_insuf <- replicate(n_sim, {
+  stoc <- nivel_stoc_initial
+  zile_fara_stoc <- 0
+  zi_livrare <- ceiling(rgamma(1, shape = alpha, rate = 1/beta))
+  for (zi in 1:zile_sapt) {
+    cerere <- rpois(1, lambda)
+    if (zi == zi_livrare) {
+      stoc <- stoc + cant_comandata
+    }
+    if (stoc < cerere) {
+      zile_fara_stoc <- zile_fara_stoc + 1
+      stoc <- 0
+    } else {
+      stoc <- stoc - cerere
+    }
+  }
+  zile_fara_stoc >= 2
+})
+probabilitate_simulata <- mean(prob_stoc_insuf)
+cat("Probabilitatea simulată ca stocul să fie insuficient cel puțin 2 zile într-o săptămână este:", round(probabilitate_simulata, 3), "\n")
+
+#cerinta test 2, estimam porbabilitatea ca numarul total de produse defecte livrate intr-o saptamana sa depaseasca 25. Comparam cu estimarea teoretica.
+set.seed(123)
+n_sim <- 100
+zile_sapt <- 7
+produse_pe_zi <- 100
+prob_defect <- 0.03
+prag_defecte <- 25
+
+defecte_sapt <- replicate(n_sim, sum(rbinom(zile_sapt, size = produse_pe_zi, prob = prob_defect)))
+prob_simulata <- mean(defecte_sapt > prag_defecte)
+
+cat("Probabilitatea simulată ca într-o săptămână să fie peste", prag_defecte, "produse defecte:", prob_simulata,"\n")
+
+
+prob_teoretica <- 1 - pbinom(prag_defecte, size = 700, prob = prob_defect)
+cat("Probabilitatea teoretica (binomiala) ca intr-o saptamana să fie peste", prag_defecte,"produse defecte:",prob_teoretica,"\n")
+
+#Vizualizare
+library(ggplot2)
+df <- data.frame(defecte_sapt = defecte_sapt)
+ggplot(df, aes(x = defecte_sapt)) +
+  geom_histogram(binwidth = 1, fill = "coral", color = "black", alpha = 0.8) +
+  geom_vline(xintercept = prag_defecte, color = "red", linetype = "dashed") +
+  labs(
+    title = "Distributia numarului total de produse defecte livrate într-o saptamana",
+    subtitle = paste("Linie rosie: prag =", prag_defecte, "| Prob simulată peste prag:", round(prob_simulata, 4)),
+    x = "Numar total produse defecte / saptamana",
+    y = "Frecventa"
+  )
+
+  
 
 
 
